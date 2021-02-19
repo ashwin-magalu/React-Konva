@@ -1,6 +1,6 @@
 /* Draws line when mouseUp action is called */
 import React, { useEffect, useRef, useState } from "react";
-import { Layer, Line, Stage, Text } from "react-konva";
+import { Layer, Line, Stage, Text, Shape } from "react-konva";
 import { updateLine, getLine } from "../config/lineSlice";
 import { updateHistory, getHistory } from "../config/historySlice";
 import { useDispatch, useSelector } from "react-redux";
