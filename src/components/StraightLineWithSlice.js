@@ -131,6 +131,21 @@ const StraightLineWithSlice = () => {
                 tension={0.5}
                 lineCap="round"
               />
+             {/* 
+                  <Shape
+                key={i}
+                sceneFunc={(context, shape) => {
+                  context.beginPath();
+                  context.moveTo(line[0], line[1]);
+                  context.lineTo(line[2], line[3]);
+                  context.fillStrokeShape(shape);
+                }}
+                stroke="#df4b26"
+                strokeWidth={5}
+                tension={0.5}
+                lineCap="round"
+              />
+              */}
             </>
           ))}
         </Layer>
