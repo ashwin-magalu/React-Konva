@@ -207,7 +207,7 @@ const MovableAnchorLine = () => {
                 fill={"white"}
                 strokeWidth={2}
                 draggable
-                onDragEnd={(e) => nodeUpdate(e)}
+                onDragMove={(e) => nodeUpdate(e)}
                 id={circle[6]}
               />
             </>
