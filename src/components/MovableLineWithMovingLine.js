@@ -9,7 +9,6 @@ import {
   getTempLineHistory,
 } from "../config/tempLineHistorySlice";
 import { useDispatch, useSelector } from "react-redux";
-import Konva from "konva";
 
 const MovableLineWithMovingLine = () => {
   const [x, setX] = useState();
@@ -20,7 +19,7 @@ const MovableLineWithMovingLine = () => {
   const tempLine = useSelector(getTempLine); // creating temp lines array and assigning values from store
   const circles = useSelector(getCircle); // creating circles array and assigning values from store
   const history = useSelector(getHistory); // creating history array and assigning values from store
-  const tempLineHistory = useSelector(getTempLineHistory); // creating history array and assigning values from store
+  const tempLineHistory = useSelector(getTempLineHistory); // creating temporary line history array and assigning values from store
   const [id, setId] = useState(0); // setting id for circles
 
   const handleMouseDown = (e) => {
@@ -59,7 +58,9 @@ const MovableLineWithMovingLine = () => {
       setX(pos.x);
       setY(pos.y);
       if (circles.length > 0) {
+        /* loading last circle's data */
         let lastPoint = circles[circles.length - 1];
+        /* dispatching temporary line's positions */
         dispatch(updateTempLine([lastPoint[0], lastPoint[1], pos.x, pos.y]));
       }
     }
@@ -86,17 +87,19 @@ const MovableLineWithMovingLine = () => {
       }
       setX();
       setX();
+      /* setting temporary lines data to [], so it won't affect next temporary line */
       dispatch(updateTempLine([]));
     }
   };
 
   const nodeUpdate = (e) => {
     if (tool === "selection") {
-      let _x = e.target.attrs.x; // getting present cursor position value and setting it onto x and y
-      let _y = e.target.attrs.y;
+      let _x = e.target.attrs.x; // getting present cursor position value and setting it onto x
+      let _y = e.target.attrs.y; // getting present cursor position value and setting it onto y
       let _id = e.target.attrs.id; //getting old circles id using event
 
-      let newCircle = circles.slice(0, circles.length); // copying circles array values to new variable
+      // copying circles array values to new variable
+      let newCircle = circles.slice(0, circles.length);
       /* put old value to history in here, as of now it can't be done */
       /* Updating the x,y co-ordinates of circle in old circles array */
       newCircle[_id] = [_x, _y, _x - 10, _x + 10, _y - 10, _y + 10, _id];
@@ -158,6 +161,15 @@ const MovableLineWithMovingLine = () => {
       dispatch(updateLine(newline));
       dispatch(updateCircle(newCircle));
       dispatch(updateHistory([...history, deletedLine, deletedCircle]));
+      dispatch(updateTempLineHistory(tempLine));
+      dispatch(
+        updateTempLine([
+          lines[lines.length - 1][0],
+          lines[lines.length - 1][1],
+          tempLine[2],
+          tempLine[3],
+        ])
+      );
     }
   };
 
@@ -191,6 +203,8 @@ const MovableLineWithMovingLine = () => {
 
     dispatch(updateLine(latestLines));
     dispatch(updateCircle(latestCircles));
+    dispatch(updateTempLine(tempLineHistory));
+    dispatch(updateTempLineHistory([]));
   };
 
   useEffect(() => {
@@ -253,6 +267,10 @@ const MovableLineWithMovingLine = () => {
           background: "red",
           color: "white",
           margin: "5px",
+          outlineWidth: 0,
+          border: "1px solid black",
+          borderRadius: "999px",
+          boxShadow: "2px 2px 3px 1px rgba(0,0,0,0.3)",
         }}
       >
         Undo
@@ -264,6 +282,10 @@ const MovableLineWithMovingLine = () => {
           background: "green",
           color: "white",
           margin: "5px",
+          outlineWidth: 0,
+          border: "1px solid black",
+          borderRadius: "999px",
+          boxShadow: "2px 2px 3px 1px rgba(0,0,0,0.3)",
         }}
       >
         Redo
@@ -275,19 +297,24 @@ const MovableLineWithMovingLine = () => {
           background: "dimgray",
           color: "white",
           margin: "5px",
+          outlineWidth: 0,
+          border: "1px solid black",
+          borderRadius: "999px",
+          boxShadow: "2px 2px 3px 1px rgba(0,0,0,0.3)",
         }}
       >
         Reset
       </button>
       <Stage
-        width={window.innerWidth}
-        height={window.innerHeight}
+        style={{ border: "2px dashed black" }}
+        width={window.innerWidth - 30}
+        height={window.innerHeight - 45}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMousemove={handleMouseMove}
       >
         <Layer>
-          <Text text="Start drawing" x={25} y={30} />
+          {/* <Text text="Start drawing" x={25} y={30} /> */}
           <Line
             key={Math.abs(Math.random() * 12345)}
             points={tempLine}
