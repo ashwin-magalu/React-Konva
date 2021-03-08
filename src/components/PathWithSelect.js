@@ -1,7 +1,7 @@
 import React, { Fragment, useRef, useEffect, useState } from "react";
-import { Stage, Layer, Rect, Transformer } from "react-konva";
+import { Stage, Layer, Transformer, Path } from "react-konva";
 
-const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
+const Shape = ({ shapeProps, isSelected, onSelect, onChange }) => {
   const shapeRef = useRef();
   const trRef = useRef();
 
@@ -15,7 +15,7 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
 
   return (
     <Fragment>
-      <Rect
+      <Path
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
@@ -49,6 +49,11 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
             height: Math.max(node.height() * scaleY),
           });
         }}
+        fill={"#F4ECF7"}
+        scale={{
+          x: 1,
+          y: 1,
+        }}
       />
       {isSelected && (
         <Transformer
@@ -66,27 +71,27 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
   );
 };
 
-const initialRectangles = [
+const initialPaths = [
   {
-    x: 50,
-    y: 50,
-    width: 100,
-    height: 100,
-    fill: "cadetblue",
-    id: "rect1",
+    data:
+      "M331,183.5625L794,102.5625C794,122.6625 1018.1,303.5625 1043,303.5625L827,616.5625L419,570.5625L331,183.5625",
+    id: 1,
+    name: "path",
+    x: 331,
+    y: 13.5625,
   },
   {
-    x: 250,
-    y: 150,
-    width: 100,
-    height: 100,
-    fill: "skyblue",
-    id: "rect2",
+    data:
+      "M165,64.5625L310,152.5625L211,205.5625L125,169.5625C125,159 161,64.5625 165,64.5625",
+    id: 2,
+    name: "path",
+    x: 165,
+    y: 64.5625,
   },
 ];
 
-const ResizeAndRotate = () => {
-  const [rectangles, setRectangles] = useState(initialRectangles);
+const PathWithSelect = () => {
+  const [shapes, setShapes] = useState(initialPaths);
   const [selectedId, setSelectedId] = useState(null);
 
   const checkDeselect = (e) => {
@@ -99,26 +104,27 @@ const ResizeAndRotate = () => {
 
   return (
     <Stage
-      width={window.innerWidth}
-      height={window.innerHeight}
+      style={{ border: "2px dashed black" }}
+      width={window.innerWidth - 5}
+      height={window.innerHeight - 5}
       onMouseDown={checkDeselect}
       onTouchStart={checkDeselect}
     >
       <Layer>
-        {rectangles.map((rect, i) => {
+        {shapes.map((shape, i) => {
           return (
-            <Rectangle
+            <Shape
               key={i}
-              shapeProps={rect}
-              isSelected={rect.id === selectedId}
+              shapeProps={shape}
+              isSelected={shape.id === selectedId}
               onSelect={() => {
-                setSelectedId(rect.id);
+                setSelectedId(shape.id);
               }}
               onChange={(newAttrs) => {
-                const rects = rectangles.slice();
+                const _shapes = shapes.slice();
                 // slice() method makes a (shallow) copy of an array, Calling it with no arguments just copies the entire array.
-                rects[i] = newAttrs;
-                setRectangles(rects);
+                _shapes[i] = newAttrs;
+                setShapes(_shapes);
               }}
             />
           );
@@ -128,4 +134,4 @@ const ResizeAndRotate = () => {
   );
 };
 
-export default ResizeAndRotate;
+export default PathWithSelect;

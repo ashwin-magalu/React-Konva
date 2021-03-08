@@ -1,24 +1,42 @@
-import React, { Fragment, useRef, useEffect, useState } from "react";
-import { Stage, Layer, Rect, Transformer } from "react-konva";
+import Konva from "konva";
+import React, {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { Image, Layer, Stage, Transformer } from "react-konva";
+import useImage from "use-image";
 
 const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
+  const [image] = useImage(
+    "https://rawcdn.githack.com/konvajs/site/726e19d6304c580ad8fe40651bd56a27ba43fcb3/react-demos/filters/public/lion.png",
+    "Anonymous"
+  );
   const shapeRef = useRef();
   const trRef = useRef();
+
+  useLayoutEffect(() => {
+    shapeRef.current.cache();
+  }, [image]);
 
   useEffect(() => {
     if (isSelected) {
       // we need to attach transformer manually
-      trRef.current.nodes([shapeRef.current]);
+      trRef.current.setNode(shapeRef.current);
       trRef.current.getLayer().batchDraw();
     }
   }, [isSelected]);
 
   return (
     <Fragment>
-      <Rect
+      <Image
+        image={image}
         onClick={onSelect}
-        onTap={onSelect}
         ref={shapeRef}
+        filters={[Konva.Filters.Blur]}
+        blurRadius={10}
         {...shapeProps}
         draggable
         onDragEnd={(e) => {
@@ -28,25 +46,15 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
             y: e.target.y(),
           });
         }}
-        onTransformEnd={() => {
-          // transformer is changing scale of the node
-          // and NOT its width or height
-          // but in the store we have only width and height
-          // to match the data better we will reset scale on transform end
+        onTransformEnd={(e) => {
           const node = shapeRef.current;
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
 
-          // we will reset it back
-          node.scaleX(1);
-          node.scaleY(1);
           onChange({
             ...shapeProps,
             x: node.x(),
             y: node.y(),
-            // set minimal value
-            width: Math.max(5, node.width() * scaleX),
-            height: Math.max(node.height() * scaleY),
+            scaleX: node.scaleX(),
+            scaleY: node.scaleY(),
           });
         }}
       />
@@ -68,41 +76,31 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
 
 const initialRectangles = [
   {
-    x: 50,
-    y: 50,
+    x: 10,
+    y: 10,
     width: 100,
     height: 100,
-    fill: "cadetblue",
+    scaleX: 1,
+    scaleY: 1,
     id: "rect1",
-  },
-  {
-    x: 250,
-    y: 150,
-    width: 100,
-    height: 100,
-    fill: "skyblue",
-    id: "rect2",
   },
 ];
 
-const ResizeAndRotate = () => {
+const TransformImage = () => {
   const [rectangles, setRectangles] = useState(initialRectangles);
-  const [selectedId, setSelectedId] = useState(null);
-
-  const checkDeselect = (e) => {
-    // deselect when clicked on empty area
-    const clickedOnEmpty = e.target === e.target.getStage();
-    if (clickedOnEmpty) {
-      setSelectedId(null);
-    }
-  };
+  const [selectedId, selectShape] = useState(null);
 
   return (
     <Stage
       width={window.innerWidth}
       height={window.innerHeight}
-      onMouseDown={checkDeselect}
-      onTouchStart={checkDeselect}
+      onMouseDown={(e) => {
+        // deselect when clicked on empty area
+        const clickedOnEmpty = e.target === e.target.getStage();
+        if (clickedOnEmpty) {
+          selectShape(null);
+        }
+      }}
     >
       <Layer>
         {rectangles.map((rect, i) => {
@@ -112,11 +110,10 @@ const ResizeAndRotate = () => {
               shapeProps={rect}
               isSelected={rect.id === selectedId}
               onSelect={() => {
-                setSelectedId(rect.id);
+                selectShape(rect.id);
               }}
               onChange={(newAttrs) => {
                 const rects = rectangles.slice();
-                // slice() method makes a (shallow) copy of an array, Calling it with no arguments just copies the entire array.
                 rects[i] = newAttrs;
                 setRectangles(rects);
               }}
@@ -128,4 +125,4 @@ const ResizeAndRotate = () => {
   );
 };
 
-export default ResizeAndRotate;
+export default TransformImage;
